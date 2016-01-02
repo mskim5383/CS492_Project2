@@ -11,15 +11,15 @@ import json
 class GameStatus(models.Model):
     status = models.IntegerField(default=0)
     turn = models.IntegerField(default=0)
-    lead = models.IntegerField()
-    contract = models.ForeignKey('Contract', related_name='gamestatus')
-    player1 = models.ForeignKey('Player', related_name='gamestatus1')
-    player2 = models.ForeignKey('Player', related_name='gamestatus2')
-    player3 = models.ForeignKey('Player', related_name='gamestatus3')
-    player4 = models.ForeignKey('Player', related_name='gamestatus4')
-    player5 = models.ForeignKey('Player', related_name='gamestatus5')
-    remain_card = models.CharField(max_length=200)
-    trick = models.CharField(max_length=200)
+    lead = models.IntegerField(default=0)
+    contract = models.ForeignKey('Contract', related_name='gamestatus', null=True)
+    player1 = models.ForeignKey('Player', related_name='gamestatus1', null=True)
+    player2 = models.ForeignKey('Player', related_name='gamestatus2', null=True)
+    player3 = models.ForeignKey('Player', related_name='gamestatus3', null=True)
+    player4 = models.ForeignKey('Player', related_name='gamestatus4', null=True)
+    player5 = models.ForeignKey('Player', related_name='gamestatus5', null=True)
+    remain_card = models.CharField(max_length=200, default=json.dumps({}))
+    trick = models.CharField(max_length=200, default=json.dumps({}))
     declarer = models.IntegerField(default=0)
     friend = models.IntegerField(default=0) # 1: 초구, 2: 카드, 3: 지정
     friend_card_face = models.IntegerField(default=-1)
@@ -130,7 +130,7 @@ class Contract(models.Model):
 
 
 class Player(models.Model):
-    hands = models.CharField(max_length=200)
+    hands = models.CharField(max_length=200, default=json.dumps({}))
     passed = models.BooleanField(default=False)
     point_card = models.CharField(max_length=200)
 
