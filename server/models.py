@@ -12,8 +12,9 @@ class GameStatus(models.Model):
     status = models.IntegerField(default=0)
     turn = models.IntegerField(default=0)
     lead = models.IntegerField(default=0)
-    contract = models.ForeignKey('Contract', related_name='gamestatus', null=True)
-    cards = models.CharField(max_length=200, default=json.dumps({}))
+    contract = models.ForeignKey('Contract', related_name='gamestatus', null=True, blank=True)
+    contract_limit = models.IntegerField(default=15)
+    cards = models.CharField(max_length=500, default=json.dumps({}))
     remain_cards = models.CharField(max_length=200, default=json.dumps({}))
     trick = models.CharField(max_length=200, default=json.dumps({}))
     declarer = models.IntegerField(default=0)
@@ -53,10 +54,16 @@ class GameStatus(models.Model):
             return player.order
         return -1
 
+    def get_player_list(self):
+        player_list = [None] * 5
+        for player in self.players.all():
+            player_list[player.order] = player
+        return player_list
+
     def add_player(self, player):
         if self.players.count() < 5:
             player.game_status = self
-            player.order = self.players.count() + 1
+            player.order = self.players.count()
             player.save()
             return player.order
         return -1
@@ -71,11 +78,11 @@ class GameStatus(models.Model):
             status['contract'] = self.contract.get_contract()
         else:
             status['contract'] = None
+        status['player0'] = None
         status['player1'] = None
         status['player2'] = None
         status['player3'] = None
         status['player4'] = None
-        status['player5'] = None
         for player in self.players.all():
             status['player' + str(player.order)] = player.id
         status['cards'] = self.get_cards()
@@ -97,7 +104,7 @@ class GameStatus(models.Model):
 
 
 class Contract(models.Model):
-    face = models.IntegerField()
+    face = models.CharField(max_length=2)
     number = models.IntegerField()
     player = models.ForeignKey('Player', related_name='contract', null=False)
 
@@ -108,12 +115,17 @@ class Contract(models.Model):
 class Player(models.Model):
     hands = models.CharField(max_length=200, default=json.dumps({}))
     passed = models.BooleanField(default=False)
-    point_card = models.CharField(max_length=200)
+    point_card = models.CharField(max_length=200, default=json.dumps({}))
     game_status = models.ForeignKey('GameStatus', related_name='players', null=True)
-    order = models.IntegerField(default=0)
+    order = models.IntegerField(default=-1)
+
+
+    def __unicode__(self):
+        return u'Player %d. passed: %s game_status: %s order: %d' %(self.id, self.passed, self.game_status and self.game_status.id, self.order)
 
     def set_hands(self, hands):
         self.hands = json.dumps(hands)
         self.save()
     def get_hands(self):
         return json.loads(self.hands)
+
