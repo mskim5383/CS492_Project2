@@ -14,13 +14,13 @@ class GameStatus(models.Model):
     lead = models.IntegerField(default=0)
     contract = models.ForeignKey('Contract', related_name='gamestatus', null=True, blank=True)
     contract_limit = models.IntegerField(default=15)
-    cards = models.CharField(max_length=500, default=json.dumps({}))
-    remain_cards = models.CharField(max_length=200, default=json.dumps({}))
-    trick = models.CharField(max_length=200, default=json.dumps({}))
+    cards = models.CharField(max_length=500, default=json.dumps({'cards':[]}))
+    remain_cards = models.CharField(max_length=200, default=json.dumps({'cards':[]}))
+    trick = models.CharField(max_length=200, default=json.dumps({'trick':[]}))
     declarer = models.IntegerField(default=0)
     friend = models.IntegerField(default=0) # 1: 초구, 2: 카드, 3: 지정
-    friend_card_face = models.IntegerField(default=-1)
-    friend_card_value = models.IntegerField(default=-1)
+    friend_card_face = models.CharField(max_length=2, blank=True)
+    friend_card_value = models.CharField(max_length=2, blank=True)
     friend_select = models.IntegerField(default=0)
 
 
@@ -29,14 +29,14 @@ class GameStatus(models.Model):
         self.save()
 
     def get_cards(self):
-        return json.loads(self.cards)
+        return json.loads(self.cards)['cards']
 
     def set_remain_cards(self, card):
         self.remain_cards = json.dumps({'cards': card})
         self.save()
 
     def get_remain_cards(self):
-        return json.loads(self.remain_cards)
+        return json.loads(self.remain_cards)['cards']
 
     def clear_trick(self):
         self.trick = json.dumps({'trick': []})
@@ -47,7 +47,7 @@ class GameStatus(models.Model):
         self.trick = json.dumps(trick)
 
     def get_trick(self):
-        return json.loads(self.trick)
+        return json.loads(self.trick)['trick']
 
     def get_player(self, player):
         if player in self.players.all():
@@ -113,7 +113,7 @@ class Contract(models.Model):
 
 
 class Player(models.Model):
-    hands = models.CharField(max_length=200, default=json.dumps({}))
+    hands = models.CharField(max_length=200, default=json.dumps({'hands':[]}))
     passed = models.BooleanField(default=False)
     point_card = models.CharField(max_length=200, default=json.dumps({}))
     game_status = models.ForeignKey('GameStatus', related_name='players', null=True)
@@ -124,8 +124,8 @@ class Player(models.Model):
         return u'Player %d. passed: %s game_status: %s order: %d' %(self.id, self.passed, self.game_status and self.game_status.id, self.order)
 
     def set_hands(self, hands):
-        self.hands = json.dumps(hands)
+        self.hands = json.dumps({'hands':hands})
         self.save()
     def get_hands(self):
-        return json.loads(self.hands)
+        return json.loads(self.hands)['hands']
 
