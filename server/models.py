@@ -13,7 +13,8 @@ class GameStatus(models.Model):
     turn = models.IntegerField(default=0)
     lead = models.IntegerField(default=0)
     contract = models.ForeignKey('Contract', related_name='gamestatus', null=True)
-    remain_card = models.CharField(max_length=200, default=json.dumps({}))
+    cards = models.CharField(max_lenghth=200, default=json.dumps({}))
+    remain_cards = models.CharField(max_length=200, default=json.dumps({}))
     trick = models.CharField(max_length=200, default=json.dumps({}))
     declarer = models.IntegerField(default=0)
     friend = models.IntegerField(default=0) # 1: 초구, 2: 카드, 3: 지정
@@ -21,12 +22,20 @@ class GameStatus(models.Model):
     friend_card_value = models.IntegerField(default=-1)
     friend_select = models.IntegerField(default=0)
 
-    def set_remain_card(self, card):
-        self.remain_card = json.dumps({'cards': card})
+
+    def set_cards(self, card):
+        self.cards = json.dumps({'cards': card})
         self.save()
 
-    def get_remain_card(self):
-        return json.loads(self.remain_card)
+    def get_cards(self):
+        return json.loads(self.cards)
+
+    def set_remain_cards(self, card):
+        self.remain_cards = json.dumps({'cards': card})
+        self.save()
+
+    def get_remain_cards(self):
+        return json.loads(self.remain_cards)
 
     def clear_trick(self):
         self.trick = json.dumps({'trick': []})
