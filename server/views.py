@@ -22,11 +22,15 @@ def waiting_room(request, user_id):
     return HttpResponse(json.dumps({'status': 'stable', 'waiting_rooms': waiting_room_list}), content_type="application/json")
 
 def create_room(request, user_id):
-    if not Player.objects.filter(id=user_id).exists():
+    if Player.objects.filter(id=user_id).exists():
+        player = Player.objects.get(id=user_id)
+    else:
         return HttpResponse(json.dumps({'status': 'invalid user'}), content_type="application/json")
     game_status = GameStatus()
-    game_status.player1 = Player.objects.get(id=user_id)
     game_status.save()
+    player.game_status = game_status
+    player.order = 1
+    player.save()
     return HttpResponse(json.dumps(game_status.get_game_status()), content_type="application/json")
 
 def game_room(request, user_id, room_id):

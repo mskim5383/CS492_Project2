@@ -13,11 +13,6 @@ class GameStatus(models.Model):
     turn = models.IntegerField(default=0)
     lead = models.IntegerField(default=0)
     contract = models.ForeignKey('Contract', related_name='gamestatus', null=True)
-    player1 = models.ForeignKey('Player', related_name='gamestatus1', null=True)
-    player2 = models.ForeignKey('Player', related_name='gamestatus2', null=True)
-    player3 = models.ForeignKey('Player', related_name='gamestatus3', null=True)
-    player4 = models.ForeignKey('Player', related_name='gamestatus4', null=True)
-    player5 = models.ForeignKey('Player', related_name='gamestatus5', null=True)
     remain_card = models.CharField(max_length=200, default=json.dumps({}))
     trick = models.CharField(max_length=200, default=json.dumps({}))
     declarer = models.IntegerField(default=0)
@@ -45,33 +40,16 @@ class GameStatus(models.Model):
         return json.loads(self.trick)
 
     def get_player(self, player):
-        player_list = [self.player1, self.player2, self.player3, self.player4, self.player4]
-        for i in range(5):
-            if (not player_list[i] is None) and player_list[i] == player:
-                return i + 1
+        if player in self.players.all():
+            return player.order
         return -1
 
     def add_player(self, player):
-        if self.player1 is None:
-            self.player1 = player
-            self.save()
-            return 1
-        if self.player2 is None:
-            self.player2 = player
-            self.save()
-            return 2
-        if self.player3 is None:
-            self.player3 = player
-            self.save()
-            return 3
-        if self.player4 is None:
-            self.player4 = player
-            self.save()
-            return 4
-        if self.player5 is None:
-            self.player5 = player
-            self.save()
-            return 5
+        if self.players.count() < 5:
+            player.game_status = self
+            player.order = self.players.count() + 1
+            player.save()
+            return player.order
         return -1
 
     def get_game_status(self):
@@ -83,26 +61,13 @@ class GameStatus(models.Model):
             status['contract'] = self.contract.get_contract()
         else:
             status['contract'] = None
-        if not self.player1 is None:
-            status['player1'] = self.player1.id
-        else:
-            status['player1'] = None
-        if not self.player2 is None:
-            status['player2'] = self.player2.id
-        else:
-            status['player2'] = None
-        if not self.player3 is None:
-            status['player3'] = self.player3.id
-        else:
-            status['player3'] = None
-        if not self.player4 is None:
-            status['player4'] = self.player4.id
-        else:
-            status['player4'] = None
-        if not self.player5 is None:
-            status['player5'] = self.player5.id
-        else:
-            status['player5'] = None
+        status['player1'] = None
+        status['player2'] = None
+        status['player3'] = None
+        status['player4'] = None
+        status['player5'] = None
+        for player in self.players.all():
+            status['player' + str(player.order)] = player.id
         status['remain_card'] = self.get_remain_card()
         status['trick'] = self.get_trick()
         status['declarer'] = self.declarer
@@ -133,6 +98,8 @@ class Player(models.Model):
     hands = models.CharField(max_length=200, default=json.dumps({}))
     passed = models.BooleanField(default=False)
     point_card = models.CharField(max_length=200)
+    game_status = models.ForeignKey('GameStatus', related_name='players', null=True)
+    order = models.IntegerField(default=0)
 
     def set_hands(self, hands):
         self.hands = json.dumps(hands)
