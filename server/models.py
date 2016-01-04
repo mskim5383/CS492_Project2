@@ -13,7 +13,7 @@ class GameStatus(models.Model):
     turn = models.IntegerField(default=0)
     lead = models.IntegerField(default=0)
     contract = models.ForeignKey('Contract', related_name='gamestatus', null=True)
-    cards = models.CharField(max_lenghth=200, default=json.dumps({}))
+    cards = models.CharField(max_length=200, default=json.dumps({}))
     remain_cards = models.CharField(max_length=200, default=json.dumps({}))
     trick = models.CharField(max_length=200, default=json.dumps({}))
     declarer = models.IntegerField(default=0)
@@ -63,6 +63,7 @@ class GameStatus(models.Model):
 
     def get_game_status(self):
         status = {}
+        status['id'] = self.id
         status['status'] = self.status
         status['turn'] = self.turn
         status['lead'] = self.lead
@@ -77,7 +78,8 @@ class GameStatus(models.Model):
         status['player5'] = None
         for player in self.players.all():
             status['player' + str(player.order)] = player.id
-        status['remain_card'] = self.get_remain_card()
+        status['cards'] = self.get_cards()
+        status['remain_cards'] = self.get_remain_cards()
         status['trick'] = self.get_trick()
         status['declarer'] = self.declarer
         status['friend'] = self.friend

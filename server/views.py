@@ -48,8 +48,8 @@ def game_room(request, user_id, room_id):
     if game_status.status == 0:
         if player.game_status == game_status:
             return HttpResponse(json.dumps(game_status.get_game_status()), content_type="application/json")
+        player.order = game_status.players.count() + 1
         player.game_status = game_status
-        player.order = game_status.players.count()
         player.save()
         if game_status.players.count() < 5:
             return HttpResponse(json.dumps(game_status.get_game_status()), content_type="application/json")
@@ -68,5 +68,5 @@ def game_room(request, user_id, room_id):
 
 
 
-    return HttpResponse(json.dumps({}), content_type="application/json")
+    return HttpResponse(json.dumps(game_status.get_game_status()), content_type="application/json")
 
