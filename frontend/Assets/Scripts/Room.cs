@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 using Assets.Scripts;
-using UnityEngine.SceneManagement;
 
 public class Room : MonoBehaviour {
     GameStatus gameStatus;
@@ -19,76 +18,52 @@ public class Room : MonoBehaviour {
     public bool refreshedFirstTime = false;
     public int roomPageNum = 0;
     public int roomCount = 0;
-    string []roomTitles = new string[4] { "", "", "", "" };
+    List<string> roomTitles;
+
+    public int pageSize = 0;
 
     public bool goingToNextScene = false;
-    
+    public Texture image;
 
     void OnGUI ()
     {
-        GUI.Label(new Rect(30, 20, 200, 30), "Mighty", titleStyle);
-        if (GUI.Button(new Rect(Screen.width-90, 10, 80, 30), "Refresh"))
+        GUI.Label(new Rect(10, 10, 200, 50), new GUIContent(image));
+        if (GUI.Button(new Rect(210, 15, 70, 40), "새로고침"))
         {
             refreshRoomNumbers();
         }
-
-        GUILayout.BeginArea(new Rect(30, 50, 600, 400));
-        if (GUILayout.Button(roomTitles[0]) && (roomPageNum * 4 + 0 < roomCount))
-        {
-            if (!goingToNextScene)
-            {
-                goingToNextScene = true;
-                gameStatus.room_id = gameStatus.rooms[roomPageNum * 4 + 0].ToString();
-                StartCoroutine(request.participateRoom());
-            }
-        }
-        if (GUILayout.Button(roomTitles[1]) && (roomPageNum * 4 + 1 < roomCount))
-        {
-            if (!goingToNextScene)
-            {
-                goingToNextScene = true;
-                gameStatus.room_id = gameStatus.rooms[roomPageNum * 4 + 1].ToString();
-                StartCoroutine(request.participateRoom());
-            }
-        }
-        if (GUILayout.Button(roomTitles[2]) && (roomPageNum * 4 + 2 < roomCount))
-        {
-            if (!goingToNextScene)
-            {
-                goingToNextScene = true;
-                gameStatus.room_id = gameStatus.rooms[roomPageNum * 4 + 2].ToString();
-                StartCoroutine(request.participateRoom());
-            }
-        }
-        if (GUILayout.Button(roomTitles[3]) && (roomPageNum * 4 + 3 < roomCount))
-        {
-            if (!goingToNextScene)
-            {
-                goingToNextScene = true;
-                gameStatus.room_id = gameStatus.rooms[roomPageNum * 4 + 3].ToString();
-                StartCoroutine(request.participateRoom());
-            }
-        }
-        GUILayout.EndArea();
-
-        GUILayout.BeginArea(new Rect(100, 20, 300, 40));
-        GUILayout.BeginHorizontal();
-        if (GUILayout.Button("<") && roomPageNum > 0)
-        {
-            roomPageNum -= 1;
-        }
-        GUILayout.Label("" + (roomPageNum + 1) + " / " + ((roomCount-1) / 4 + 1), pageNumStyle);
-        if (GUILayout.Button(">") && ((roomCount-1) / 4) > roomPageNum)
-        {
-            roomPageNum += 1;
-        }
-        if (GUILayout.Button("CreateRoom"))
+        if (GUI.Button(new Rect(290, 15, 70, 40), "방만들기"))
         {
             if (!goingToNextScene)
             {
                 goingToNextScene = true;
                 StartCoroutine(request.createRoom());
             }
+        }
+
+        for (int t = 0; t < pageSize; t++)
+        {
+            if (GUI.Button(new Rect(20, 80 + 40 * t, Screen.width - 40, 30), roomTitles[t]) && (roomPageNum * pageSize + t < roomCount))
+            {
+                if (!goingToNextScene)
+                {
+                    goingToNextScene = true;
+                    gameStatus.room_id = gameStatus.rooms[roomPageNum * pageSize + t].ToString();
+                    StartCoroutine(request.participateRoom());
+                }
+            }
+        }
+
+        GUILayout.BeginArea(new Rect(Screen.width - 100, 20, 80, 40));
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("<") && roomPageNum > 0)
+        {
+            roomPageNum -= 1;
+        }
+        GUILayout.Label("" + (roomPageNum + 1) + " / " + ((roomCount-1) / pageSize + 1), pageNumStyle);
+        if (GUILayout.Button(">") && ((roomCount-1) / pageSize) > roomPageNum)
+        {
+            roomPageNum += 1;
         }
         GUILayout.EndHorizontal();
         GUILayout.EndArea();
@@ -100,6 +75,13 @@ public class Room : MonoBehaviour {
         rooms = new ArrayList();
         roomButtons = new ArrayList();
         roomLabels = new ArrayList();
+
+        pageSize = (Screen.height - 90) / 40;
+        roomTitles = new List<string>();
+        for (int t = 0; t < pageSize; t++)
+        {
+            roomTitles.Add("");
+        }
         StartCoroutine(request.RequestUser());
 
         /* */
@@ -138,15 +120,15 @@ public class Room : MonoBehaviour {
             roomCount = newRooms.Count;
             if (roomCount != newMemCounts.Count)
                 Debug.Log("[Error] roomCount " + roomCount + "!=" + newMemCounts.Count);
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < pageSize; j++)
             {
-                if (roomPageNum * 4 + j >= roomCount)
+                if (roomPageNum * pageSize + j >= roomCount)
                 {
-                    roomTitles[j] = "Unavailable";
+                    roomTitles[j] = "";
                 }
                 else
                 {
-                    roomTitles[j] = "Room #" + gameStatus.rooms[roomPageNum * 4 + j] + "    " + gameStatus.roomMemCounts[roomPageNum * 4 + j] + "/5";
+                    roomTitles[j] = "방 #" + gameStatus.rooms[roomPageNum * pageSize + j] + "   인원: " + gameStatus.roomMemCounts[roomPageNum * pageSize + j] + "/5";
                 }
             }
             rooms = newRooms;

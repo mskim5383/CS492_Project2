@@ -135,7 +135,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0.019607844}
+  m_BackGroundColor: {r: 0, g: 0.7931032, b: 1, a: 0.019607844}
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
@@ -281,7 +281,7 @@ MonoBehaviour:
     m_Padding:
       m_Left: 0
       m_Right: 0
-      m_Top: 0
+      m_Top: 5
       m_Bottom: 0
     m_Overflow:
       m_Left: 0
@@ -301,6 +301,9 @@ MonoBehaviour:
     m_FixedHeight: 0
     m_StretchWidth: 1
     m_StretchHeight: 0
+  refreshedFirstTime: 0
   roomPageNum: 0
   roomCount: 0
+  pageSize: 0
   goingToNextScene: 0
+  image: {fileID: 2800000, guid: efe54e3da31190e4894045018c95d4f0, type: 3}
