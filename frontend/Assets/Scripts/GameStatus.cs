@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using LitJson;
 using System.Collections;
+using UnityEngine;
 
 namespace Assets.Scripts
 {
@@ -11,6 +12,8 @@ namespace Assets.Scripts
     {
         public string id;
         public static GameStatus instance;
+
+        public bool dirty = true;
 
         public ArrayList rooms;
         public ArrayList roomMemCount;
@@ -28,7 +31,6 @@ namespace Assets.Scripts
                 instance = new GameStatus();
             }
             return instance;
-
         }
     }
 }

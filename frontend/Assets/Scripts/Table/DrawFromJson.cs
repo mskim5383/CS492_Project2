@@ -10,11 +10,23 @@ namespace Assets.Scripts.Table
 {
     class DrawFromJson
     {
-        Quaternion OPEN = new Quaternion(180, 0, 0, 0);
-        Quaternion CLOSE = new Quaternion(0, 0, 0, 0);
         Deck deck;
         public DrawFromJson(Deck deck) {
             this.deck = deck;
+        }
+
+        public void changeCardColor(GameObject cardObject, bool forcedWhite = false)
+        {
+            ClickEvent c = cardObject.GetComponent<ClickEvent>();
+            SpriteRenderer sr = cardObject.GetComponent<SpriteRenderer>();
+            if (forcedWhite) c.selected = false;
+            if (c.selected)
+            {
+                sr.color = new Color(0, 255, 0);
+            } else
+            {
+                sr.color = new Color(255, 255, 255);
+            }
         }
 
         public void draw(JsonData data)
@@ -29,6 +41,7 @@ namespace Assets.Scripts.Table
             {
                 string strCard = hands[i].ToString();
                 GameObject cardObject = getCardObjectByString(strCard);
+                changeCardColor(cardObject);
                 cardObject.transform.position = TablePosition.getCardPositionForHand(OWN, i, hands.Count);
                 SpriteRenderer sr = cardObject.GetComponent<SpriteRenderer>();
                 sr.sortingOrder = i;
@@ -48,6 +61,7 @@ namespace Assets.Scripts.Table
                     for (int c=0;c< hand_count;c ++)
                     {
                         GameObject cardObject = deck.getDefaultCard(back_count++);
+                        changeCardColor(cardObject, true);
                         cardObject.transform.position = TablePosition.getCardPositionForHand(i, c, hand_count);
                         SpriteRenderer sr = cardObject.GetComponent<SpriteRenderer>();
                         sr.sortingOrder = c;
@@ -57,6 +71,7 @@ namespace Assets.Scripts.Table
                 for (int c=0;c<point_card.Count;c++)
                 {
                     GameObject cardObject = getCardObjectByString(point_card[c].ToString());
+                    changeCardColor(cardObject, true);
                     cardObject.transform.position = TablePosition.getCardPositionForPointCard(i, c, point_card.Count);
                     SpriteRenderer sr = cardObject.GetComponent<SpriteRenderer>();
                     sr.sortingOrder = c;
@@ -72,6 +87,7 @@ namespace Assets.Scripts.Table
                 string strCard = trick[i]["card"].ToString();
 
                 GameObject cardObject = getCardObjectByString(strCard);
+                changeCardColor(cardObject, true);
                 cardObject.transform.position = TablePosition.getThrowPosition(rela_order);
                 SpriteRenderer sr = cardObject.GetComponent<SpriteRenderer>();
                 sr.sortingOrder = i;

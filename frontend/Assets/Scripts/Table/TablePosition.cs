@@ -97,7 +97,9 @@ namespace Assets.Scripts.Table
             {
                 x = getPos(x, i, n, player == 0 ? ownCardMargin : cardMargin);
             }
-            return camera.ScreenToWorldPoint(new Vector3(x, y, 10));
+            Vector3 pos = camera.ScreenToWorldPoint(new Vector3(x, y, 10));
+            pos.z = -1;
+            return pos;
         }
         
         public static Vector3 getCardPositionForPointCard(int player, int i, int n)
