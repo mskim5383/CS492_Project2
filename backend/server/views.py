@@ -46,22 +46,26 @@ def game_room(request, user_id, room_id):
     else:
         return HttpResponse(json.dumps({'status': 'invalid room id'}), content_type="application/json")
     status = game_status.status
-    if status == 0:
-        status0(request, player, game_status)
-    elif player.game_status == game_status and player.order == game_status.turn and request.GET.has_key('action'):
-        if status == 1:
-            status1(request, player, game_status)
-        elif status == 2:
-            status2(request, player, game_status)
-        elif status == 3:
-            status3(request, player, game_status)
+    data = json.loads(request.body)
+    try:
+        if status == 0:
+            status0(data, player, game_status)
+        elif player.game_status == game_status and player.order == game_status.turn and data.has_key('action'):
+            if status == 1:
+                status1(data, player, game_status)
+            elif status == 2:
+                status2(data, player, game_status)
+            elif status == 3:
+                status3(data, player, game_status)
+    except ValueError:
+        pass
 
 
 
     return HttpResponse(json.dumps({'game_status':game_status.get_game_status(),
                                     'player':player.get_player()}), content_type="application/json")
 
-def status0(request, player, game_status):
+def status0(data, player, game_status):
     if player.game_status == game_status:
         return
     order = game_status.add_player(player)
@@ -77,25 +81,23 @@ def status0(request, player, game_status):
     cards.append('Jk')
     random.shuffle(cards)
     game_status.set_remain_cards(cards[:3])
-    player_list = game_status.get_player_list()
-    for i in range(5):
-        player_list[i].set_hands(cards[3+10*i:13+10*i])
-        player_list[i].save()
+    for player in game_status.players.all():
+        player.set_hands(cards[3+10*i:13+10*i])
 
 
     return
 
-def status1(request, player, game_status):
+def status1(data, player, game_status):
     if not player.passed:
-        action = request.GET.get('action')
+        action = data.get('action')
         if action == 'contract':
-            if not game_status.contract is None and int(request.GET.get('number')) <= game_status.contract.number:
+            if not game_status.contract is None and int(data.get('number')) <= game_status.contract.number:
                 return
-            if int(request.GET.get('number')) < game_status.contract_limit:
+            if int(data.get('number')) < game_status.contract_limit:
                 return
             contract = Contract()
-            contract.face = request.GET.get('face')
-            contract.number = int(request.GET.get('number'))
+            contract.face = data.get('face')
+            contract.number = int(data.get('number'))
             contract.player = player
             contract.save()
             game_status.contract = contract
@@ -139,11 +141,11 @@ def status1(request, player, game_status):
     game_status.save()
     return
 
-def status2(request, player, game_status):
-    action = request.GET.get('action')
+def status2(data, player, game_status):
+    action = data.get('action')
     if action == 'remain' and len(player.get_hands()) == 13:
         hands = player.get_hands()
-        cards = request.GET.get('cards')
+        cards = data.get('cards')
         if len(cards) != 8:
             return
         cards = cards.split(',')
@@ -156,22 +158,22 @@ def status2(request, player, game_status):
         player.set_hands(hands)
         player.save()
     elif action == 'friend' and not game_status.friend:
-        game_status.friend = int(request.GET.get('friend'))
+        game_status.friend = int(data.get('friend'))
         if game_status.friend == 2:
-            game_status.friend_card_face = request.GET.get('face')
-            game_status.friend_card_value = request.GET.get('value')
+            game_status.friend_card_face = data.get('face')
+            game_status.friend_card_value = data.get('value')
         elif game_status.friend == 3:
-            game_status.friend_select = int(request.GET.get('select'))
+            game_status.friend_select = int(data.get('select'))
     if game_status.friend and len(player.get_hands()) == 10:
         game_status.status += 1
     game_status.save()
     return
 
-def status3(request, player, game_status):
-    action = request.GET.get('action')
+def status3(data, player, game_status):
+    action = data.get('action')
     hands = player.get_hands()
     giruda = game_status.contract.face
-    card = request.GET.get('card')
+    card = data.get('card')
     mighty = 'SA'
     if giruda == 'S':
         mighty = 'CA'
@@ -183,7 +185,7 @@ def status3(request, player, game_status):
     else:
         if game_status.turn == game_status.lead:
             if card == 'Jk':
-                game_status.lead_face = request.GET.get('face')
+                game_status.lead_face = data.get('face')
             else:
                 game_status.lead_face == card[0]
         lead_face = game_status.lead_face
