@@ -10,10 +10,11 @@ namespace Assets.Scripts.Table
     {
         private const int tableMargin = 30;
         private const int cardMargin = 20;
-        private static int getPos(int centerPosition, int i, int n)
+        private const int ownCardMargin = 50;
+        private static int getPos(int centerPosition, int i, int n, int margin)
         {
-            int startPosition = centerPosition - (cardMargin * (n - 1)) / 2;
-            return startPosition + cardMargin * i;
+            int startPosition = centerPosition - (margin * (n - 1)) / 2;
+            return startPosition + margin * i;
         }
 
         class Player5_Center
@@ -90,11 +91,11 @@ namespace Assets.Scripts.Table
             int x = center.x, y = center.y;
             if (center.isVertical)
             {
-                y = getPos(y, i, n);
+                y = getPos(y, i, n, player == 0 ? ownCardMargin : cardMargin);
             }
             else
             {
-                x = getPos(x, i, n);
+                x = getPos(x, i, n, player == 0 ? ownCardMargin : cardMargin);
             }
             return camera.ScreenToWorldPoint(new Vector3(x, y, 10));
         }
@@ -107,13 +108,13 @@ namespace Assets.Scripts.Table
             int x = center.x, y = center.y;
             if (center.isVertical)
             {
-                y = getPos(y, i, n);
+                y = getPos(y, i, n, cardMargin);
                 if (player == 1) x -= tableMargin;
                 else x += tableMargin;
             }
             else
             {
-                x = getPos(x, i, n);
+                x = getPos(x, i, n, cardMargin);
                 if (player == 0) y += tableMargin;
                 else y -= tableMargin;
             }
