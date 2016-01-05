@@ -53,6 +53,8 @@ def game_room(request, user_id, room_id):
             status1(request, player, game_status)
         elif status == 2:
             status2(request, player, game_status)
+        elif status == 3:
+            status3(request, player, game_status)
 
 
 
@@ -72,7 +74,7 @@ def status0(request, player, game_status):
     for face in FACE:
         for value in VALUE:
             cards.append(face+value)
-    cards.append('JK')
+    cards.append('Jk')
     random.shuffle(cards)
     game_status.set_remain_cards(cards[:3])
     player_list = game_status.get_player_list()
@@ -142,12 +144,10 @@ def status2(request, player, game_status):
     if action == 'remain' and len(player.get_hands()) == 13:
         hands = player.get_hands()
         cards = request.GET.get('cards')
-        print cards
         if len(cards) != 8:
             return
         cards = cards.split(',')
         for card in cards:
-            print card
             if not card in hands:
                 return
         for card in cards:
@@ -161,9 +161,88 @@ def status2(request, player, game_status):
             game_status.friend_card_face = request.GET.get('face')
             game_status.friend_card_value = request.GET.get('value')
         elif game_status.friend == 3:
-            game_status.friend_select = request.GET.get('select')
+            game_status.friend_select = int(request.GET.get('select'))
     if game_status.friend and len(player.get_hands()) == 10:
         game_status.status += 1
     game_status.save()
     return
+
+def status3(request, player, game_status):
+    action = request.GET.get('action')
+    hands = player.get_hands()
+    giruda = game_status.contract.face
+    if game_status.joker_call and 'Jk' in hands:
+        hands.pop(hands.index('Jk'))
+        player.set_hands(hands)
+        game_status.add_trick(player, 'Jc')
+        lead_face = game_status.lead_face
+    else:
+        if game_status.turn == game_status.lead:
+            card = request.GET.get('card')
+            if card == 'Jk':
+                game_status.lead_face = request.GET.get('face')
+            else:
+                game_status.lead_face == card[0]
+        lead_face = game_status.lead_face
+        if action == 'joker_call':
+            if game_status.contract.face == 'C':
+                joker_call = 'S3'
+            else:
+                joker_call = 'C3'
+            if not joker_call in hands:
+                return
+            hands.pop(hands.index(joker_call))
+            player.set_hands(hands)
+            game_status.add_trick(player, joker_call)
+        elif action == 'throw':
+            card = request.GET.get('card')
+            if not card in hands:
+                return
+            if not card == 'Jk' and card[0] != lead_face:
+                for hand in hands:
+                    if hand[0] == lead_face:
+                        return
+            hands.pop(hands.index(card))
+            player.set_hands(hands)
+            game_status.add_trick(player, card)
+        else:
+            return
+    game_status.turn = (game_status.turn + 1) % 5
+    if game_status.turn == game_status.lead:
+        point_card = []
+        boss_card = {'card': '_0'}
+        trick = game_status.get_trick()
+        for card in trick:
+            if card['order'] == 0:
+                lead_face = card['card'][0]
+        for card in trick:
+            if card['card'][1:] in ('10', 'J', 'Q', 'K', 'A'):
+                point_card.append(card['card'])
+            if get_card_score(card['card'], giruda, lead_face) > get_card_score(boss_card['card'], giruda, lead_face):
+                boss_card = card
+        lead = boss_card['player_order']
+        game_status.lead = lead
+        game_status.turn = lead
+        game_status.clear_trick()
+        game_status.get_player_list()[lead].add_point_cards(point_card)
+    game_status.save()
+    return
+
+def get_card_score(card, giruda, lead_face):
+    score = 0
+    if card == 'Jk':
+        return 1000
+    elif giruda == 'S' and card == 'CA':
+        return 10000
+    elif card == 'SA':
+        return 10000
+    else:
+        if card[0] == giruda:
+            score += 200
+        elif card[0] == lead_face:
+            score += 100
+        score += {'0': 0, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14}[card[1:]]
+    return score
+
+
 

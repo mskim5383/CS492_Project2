@@ -12,6 +12,7 @@ class GameStatus(models.Model):
     status = models.IntegerField(default=0)
     turn = models.IntegerField(default=0)
     lead = models.IntegerField(default=0)
+    lead_face = models.CharField(max_length=2, default=' ')
     contract = models.ForeignKey('Contract', related_name='gamestatus', null=True, blank=True)
     contract_limit = models.IntegerField(default=15)
     remain_cards = models.CharField(max_length=200, default=json.dumps({'cards':[]}))
@@ -21,6 +22,7 @@ class GameStatus(models.Model):
     friend_card_face = models.CharField(max_length=2, blank=True)
     friend_card_value = models.CharField(max_length=2, blank=True)
     friend_select = models.IntegerField(default=0)
+    joker_call = models.BooleanField(default=False)
 
 
     def set_remain_cards(self, card):
@@ -34,9 +36,11 @@ class GameStatus(models.Model):
         self.trick = json.dumps({'trick': []})
 
     def add_trick(self, player, card):
-        trick = json.loads(self.trick)
-        trick['trick'].append({'player': player, 'card': card})
-        self.trick = json.dumps(trick)
+        trick = self.get_trick()
+        print trick
+        print len(trick)
+        trick.append({'player_order': player.order, 'order': len(trick), 'card': card})
+        self.trick = json.dumps({'trick': trick})
 
     def get_trick(self):
         return json.loads(self.trick)['trick']
@@ -66,6 +70,7 @@ class GameStatus(models.Model):
         status['status'] = self.status
         status['turn'] = self.turn
         status['lead'] = self.lead
+        status['lead_face'] = self.lead_face
         if not self.contract is None:
             status['contract'] = self.contract.get_contract()
         else:
@@ -126,8 +131,9 @@ class Player(models.Model):
     def get_hands(self):
         return json.loads(self.hands)['hands']
 
-    def set_point_card(self, cards):
-        self.point_card = json.dumps({'cards':cards})
+    def add_point_cards(self, cards):
+        point_card = self.get_point_card() + cards
+        self.point_card = json.dumps({'cards':point_card})
         self.save()
 
     def get_point_card(self):
