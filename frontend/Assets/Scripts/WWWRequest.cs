@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using LitJson;
+using UnityEngine.SceneManagement;
 
 namespace Assets.Scripts
 {
@@ -34,7 +35,7 @@ namespace Assets.Scripts
         {
             if (!string.IsNullOrEmpty(status.id))
             {
-                WWW www = new WWW(server_url + "/" + status.id);
+                WWW www = new WWW(server_url + "/" + status.id+"/");
                 yield return www;
 
                 if (string.IsNullOrEmpty(www.error))
@@ -50,24 +51,30 @@ namespace Assets.Scripts
                     {
                         if (jWaitingRooms[i]["status"].Equals(0))
                         {
+                            Debug.Log("[STATUS] status is zero");
                             aWaitingRooms.Add(jWaitingRooms[i]["id"]);
                             tmp = 0;
-                            for (int p = 0; p < 5; p++) {
-                                if (jWaitingRooms[i]["players"]["player" + p] == null)
+                            for (int p = 0; p < 5; p++)
+                            {
+                                if (jWaitingRooms[i]["players"]["player"+p]["id"] == null)
                                 {
-                                    Debug.Log("player p null :" + p);
+                                    Debug.Log("player p not null :" + p);
                                 }
                                 else
                                 {
-                                    Debug.Log("player p not null :" + p);
+                                    Debug.Log("player p null :" + p);
                                     tmp += 1;
                                 }
                             }
                             aWaitMemberCount.Add(tmp);
                         }
+                        else
+                        {
+                            Debug.Log("[STATUS] status is not zero");
+                        }
                     }
                     this.status.rooms = aWaitingRooms; /* is lock necessary? is it ok to memory? */
-                    this.status.roomMemCount = aWaitMemberCount;
+                    this.status.roomMemCounts = aWaitMemberCount;
                 }
             }
             else
@@ -75,6 +82,36 @@ namespace Assets.Scripts
                 Debug.Log("status id is null");
             }
 
+        }
+        public IEnumerator createRoom()
+        {
+            WWW www = new WWW(server_url + "/" + status.id + "/create_room/");
+            yield return www;
+            if (string.IsNullOrEmpty(www.error))
+            {
+                JsonData response = JsonMapper.ToObject(www.text);
+                status.room_id = response["id"].ToString();
+                SceneManager.LoadScene("Scenes/Main");
+            }
+            else
+            {
+                Debug.Log(www.error);
+            }
+        }
+        public IEnumerator participateRoom()
+        {
+            WWW www = new WWW(server_url + "/" + status.id + "/" + status.room_id+"/");
+            yield return www;
+            if (string.IsNullOrEmpty(www.error))
+            {
+                JsonData response = JsonMapper.ToObject(www.text);
+                SceneManager.LoadScene("Scenes/Main");
+
+            }
+            else
+            {
+                Debug.Log(www.error);
+            }
         }
     }
 }

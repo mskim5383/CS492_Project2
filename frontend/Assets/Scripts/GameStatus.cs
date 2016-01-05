@@ -10,19 +10,22 @@ namespace Assets.Scripts
 {
     class GameStatus
     {
-        public string id;
         public static GameStatus instance;
+
+        public string id;
 
         public bool dirty = true;
 
         public ArrayList rooms;
-        public ArrayList roomMemCount;
+        public ArrayList roomMemCounts;
         public string room_id;
 
         public GameStatus ()
         {
             id = null;
             rooms = new ArrayList();
+            roomMemCounts = new ArrayList();
+            room_id = null;
         }
         public static GameStatus getInstance()
         {

@@ -8,6 +8,7 @@ public class Room : MonoBehaviour {
     GameStatus gameStatus;
     WWWRequest request;
     ArrayList rooms; // list of room numbers (integer)
+    ArrayList roomMemCounts;
     int i = 0;
 
     ArrayList roomButtons;
@@ -19,6 +20,8 @@ public class Room : MonoBehaviour {
     public int roomPageNum = 0;
     public int roomCount = 0;
     string []roomTitles = new string[4] { "", "", "", "" };
+
+    public bool goingToNextScene = false;
     
 
     void OnGUI ()
@@ -34,25 +37,39 @@ public class Room : MonoBehaviour {
         GUILayout.BeginArea(new Rect(30, 50, 600, 400));
         if (GUILayout.Button(roomTitles[0]) && (roomPageNum * 4 + 0 < roomCount))
         {
-            gameStatus.room_id = gameStatus.rooms[roomPageNum * 4 + 0].ToString();
-            SceneManager.LoadScene("Main");
+            if (!goingToNextScene)
+            {
+                goingToNextScene = true;
+                gameStatus.room_id = gameStatus.rooms[roomPageNum * 4 + 0].ToString();
+                StartCoroutine(request.participateRoom());
+            }
         }
         if (GUILayout.Button(roomTitles[1]) && (roomPageNum * 4 + 1 < roomCount))
         {
-            gameStatus.room_id = gameStatus.rooms[roomPageNum * 4 + 1].ToString();
-            SceneManager.LoadScene("Main");
-
+            if (!goingToNextScene)
+            {
+                goingToNextScene = true;
+                gameStatus.room_id = gameStatus.rooms[roomPageNum * 4 + 1].ToString();
+                StartCoroutine(request.participateRoom());
+            }
         }
         if (GUILayout.Button(roomTitles[2]) && (roomPageNum * 4 + 2 < roomCount))
         {
-            gameStatus.room_id = gameStatus.rooms[roomPageNum * 4 + 2].ToString();
-            SceneManager.LoadScene("Main");
-
+            if (!goingToNextScene)
+            {
+                goingToNextScene = true;
+                gameStatus.room_id = gameStatus.rooms[roomPageNum * 4 + 2].ToString();
+                StartCoroutine(request.participateRoom());
+            }
         }
         if (GUILayout.Button(roomTitles[3]) && (roomPageNum * 4 + 3 < roomCount))
         {
-            gameStatus.room_id = gameStatus.rooms[roomPageNum * 4 + 3].ToString();
-            SceneManager.LoadScene("Main");
+            if (!goingToNextScene)
+            {
+                goingToNextScene = true;
+                gameStatus.room_id = gameStatus.rooms[roomPageNum * 4 + 3].ToString();
+                StartCoroutine(request.participateRoom());
+            }
         }
         GUILayout.EndArea();
 
@@ -62,12 +79,19 @@ public class Room : MonoBehaviour {
         {
             roomPageNum -= 1;
         }
-        GUILayout.Label("" + (roomPageNum + 1) + " / " + (roomCount / 4 + 1));
-        if (GUILayout.Button(">") && (roomCount / 4) > roomPageNum)
+        GUILayout.Label("" + (roomPageNum + 1) + " / " + ((roomCount-1) / 4 + 1), pageNumStyle);
+        if (GUILayout.Button(">") && ((roomCount-1) / 4) > roomPageNum)
         {
             roomPageNum += 1;
         }
-
+        if (GUILayout.Button("CreateRoom"))
+        {
+            if (!goingToNextScene)
+            {
+                goingToNextScene = true;
+                StartCoroutine(request.createRoom());
+            }
+        }
         GUILayout.EndHorizontal();
         GUILayout.EndArea();
     }
@@ -103,11 +127,15 @@ public class Room : MonoBehaviour {
         Debug.Log("Button1");
     }
     void Update () {
+        if (goingToNextScene == true)
+            return;
         ArrayList newRooms = gameStatus.rooms;
-        if (newRooms != rooms)
+        ArrayList newMemCounts = gameStatus.roomMemCounts;
+        if (newRooms != null && newMemCounts != null && (newRooms != rooms || newMemCounts != roomMemCounts))
         {
-            Debug.Log("Update happened!");
             roomCount = newRooms.Count;
+            if (roomCount != newMemCounts.Count)
+                Debug.Log("[Error] roomCount " + roomCount + "!=" + newMemCounts.Count);
             for (int j = 0; j < 4; j++)
             {
                 if (roomPageNum * 4 + j >= roomCount)
@@ -116,9 +144,10 @@ public class Room : MonoBehaviour {
                 }
                 else
                 {
-                    roomTitles[j] = "Room #" + gameStatus.rooms[roomPageNum * 4 + j] + "    " + gameStatus.roomMemCount[roomPageNum * 4 + j] + "/5";
+                    roomTitles[j] = "Room #" + gameStatus.rooms[roomPageNum * 4 + j] + "    " + gameStatus.roomMemCounts[roomPageNum * 4 + j] + "/5";
                 }
             }
+            rooms = newRooms;
         }
 	}
 
