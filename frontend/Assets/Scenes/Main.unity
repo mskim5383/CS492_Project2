@@ -97,6 +97,8 @@ GameObject:
   - 114: {fileID: 385297828}
   - 114: {fileID: 385297829}
   - 114: {fileID: 385297830}
+  - 114: {fileID: 385297832}
+  - 114: {fileID: 385297831}
   m_Layer: 0
   m_Name: WindowScripts
   m_TagString: Untagged
@@ -161,6 +163,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scrollPosition: {x: 0, y: 0}
+--- !u!114 &385297831
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 385297825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5564462e69d2b574c8bb64367e5d531e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &385297832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 385297825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f4de81fa1a0f0c4eabc8ba0ace3b671, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &580253205
 GameObject:
   m_ObjectHideFlags: 0
@@ -232,6 +256,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92e674d2122a9fa4d94696428d33c0d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  selected: 0
 --- !u!61 &580253209
 BoxCollider2D:
   m_ObjectHideFlags: 0

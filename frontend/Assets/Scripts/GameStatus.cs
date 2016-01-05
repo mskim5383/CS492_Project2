@@ -11,14 +11,24 @@ namespace Assets.Scripts
     class GameStatus
     {
         public static GameStatus instance;
+        
+        public bool dirty = false;
+        public bool remain = false;
+        public Friend remainFrom;
+        public bool card = false;
+        public Myturn cardFrom;
+        public bool jkMark = false;
+        public string jcStr = "";
+        public bool jcMark = false;
 
         public string id;
-
-        public bool dirty = true;
 
         public ArrayList rooms;
         public ArrayList roomMemCounts;
         public string room_id;
+
+        public JsonData jsonData;
+        public int nowStatus = -1;
 
         public GameStatus ()
         {

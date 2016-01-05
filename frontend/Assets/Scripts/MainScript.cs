@@ -1,39 +1,45 @@
-﻿using UnityEngine;
+﻿﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using Assets.Scripts;
 using Assets.Scripts.Card;
 using Assets.Scripts.Table;
+using LitJson;
 
 public class MainScript : MonoBehaviour {
     // Use this for initialization
-    GameStatus status;
-    WWWRequest request;
 
     Deck deck;
 	void Start () {
-        status = new GameStatus();
-        request = new WWWRequest();
+        // dummy
+        //GameStatus.getInstance().id = "102";
+        //GameStatus.getInstance().id = "103";
+        //GameStatus.getInstance().id = "104";
+        //GameStatus.getInstance().id = "105";
+        //GameStatus.getInstance().id = "106";
+        //GameStatus.getInstance().room_id = "14";
+        // --dummy
         deck = new Deck();
-
-        StartCoroutine(request.RequestUser());
-
-        KeyValuePair<Mark, int>[] cards = new KeyValuePair<Mark, int>[deck.cardMap.Keys.Count];
-        deck.cardMap.Keys.CopyTo(cards, 0);
-        int n = 10;
-        for (int i=0;i<n;i++)
-        {
-            GameObject cardObject = deck.cardMap[cards[i]];
-            cardObject.transform.position = TablePosition.getCardPositionForHand(0, i, n);
-            if (Random.Range(0,2) == 0)
-            {
-                cardObject.transform.rotation = new Quaternion(180, 0, 0, 0);
-            }
-        }
+        WWWRequest request = new WWWRequest();
+        StartCoroutine(request.RequestGameStatus());
     }
 
     // Update is called once per frame
+    const float updateTime = 0.5f;
+    float remainTime = 0.5f;
     void Update () {
-	
-	}
+        remainTime -= Time.deltaTime;
+
+        WWWRequest request = new WWWRequest();
+        if (remainTime < 0.0)
+        {
+            StartCoroutine(request.RequestGameStatus());
+            remainTime = updateTime;
+        }
+
+        if (!GameStatus.getInstance().dirty) return;
+        GameStatus.getInstance().dirty = false;
+        DrawFromJson render = new DrawFromJson(deck);
+        render.draw(GameStatus.getInstance().jsonData);
+    }
 }
