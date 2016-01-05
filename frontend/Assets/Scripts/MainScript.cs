@@ -13,7 +13,7 @@ public class MainScript : MonoBehaviour {
     Deck deck;
 	void Start () {
         status = new GameStatus();
-        request = new WWWRequest(status);
+        request = new WWWRequest();
         deck = new Deck();
 
         StartCoroutine(request.RequestUser());
