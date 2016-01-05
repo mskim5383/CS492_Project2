@@ -198,7 +198,7 @@ def status3(data, player, game_status):
             if card == 'Jk':
                 game_status.lead_face = data.get('face')
             else:
-                game_status.lead_face == card[0]
+                game_status.lead_face = card[0]
         lead_face = game_status.lead_face
         if action == 'joker_call':
             if game_status.contract.face == 'C':

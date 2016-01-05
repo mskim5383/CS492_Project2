@@ -38,8 +38,6 @@ class GameStatus(models.Model):
 
     def add_trick(self, player, card):
         trick = self.get_trick()
-        print trick
-        print len(trick)
         trick.append({'order': player.order, 'card': card})
         self.trick = json.dumps({'trick': trick})
 
