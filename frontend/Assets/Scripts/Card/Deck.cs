@@ -4,41 +4,63 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using Assets.Scripts;
+using System.Collections;
 
 namespace Assets.Scripts.Card
 {
     class Deck
     {
         public Dictionary<KeyValuePair<Mark, int>, GameObject> cardMap;
+        public ArrayList defaultCards;
         public Deck()
         {
             cardMap = new Dictionary<KeyValuePair<Mark, int>, GameObject>();
-            foreach (Mark mark in new Mark[] { Mark.Spades, Mark.Heart, Mark.Diamond, Mark.Club, Mark.Joker })
+            defaultCards = new ArrayList();
+            foreach (Mark mark in new Mark[] { Mark.S, Mark.H, Mark.D, Mark.C, Mark.JK })
             {
-                if (mark != Mark.Joker)
+                if (mark != Mark.JK)
                 {
                     for (int num = 1; num <= 13; num++)
                     {
-                        Mesh mesh = CardMesh.getInstance().getMesh(mark, num);
-                        createCardObjectWithMesh(mark, num, mesh);
+                        Sprite sprite = CardSprites.getInstance().getSprite(mark, num);
+                        createCardObjectWithSprite(mark, num, sprite);
                     }
                 } else
                 {
-                    Mesh mesh = CardMesh.getInstance().getMesh(mark, 0);
-                    createCardObjectWithMesh(mark, 0, mesh);
+                    Sprite sprite = CardSprites.getInstance().getSprite(mark, 0);
+                    createCardObjectWithSprite(mark, 0, sprite);
                 }
             }
         }
-        void createCardObjectWithMesh(Mark mark, int num, Mesh mesh)
+
+        void createCardObjectWithSprite(Mark mark, int num, Sprite sprite)
         {
-            GameObject card = GameObject.Find("CardTemplate");
+            GameObject card = GameObject.Find("CardSprite");
             KeyValuePair<Mark, int> key = new KeyValuePair<Mark, int>(mark, num);
             GameObject new_card = UnityEngine.Object.Instantiate(card);
 
-            MeshFilter filter = new_card.GetComponent<MeshFilter>();
-            filter.sharedMesh = mesh;
+            SpriteRenderer sr = new_card.GetComponent<SpriteRenderer>();
+            sr.sprite = sprite;
 
             cardMap.Add(key, new_card);
+        }
+
+        private GameObject createDefaultCard()
+        {
+            GameObject card = GameObject.Find("CardSprite");
+            GameObject new_card = UnityEngine.Object.Instantiate(card);
+            SpriteRenderer sr = new_card.GetComponent<SpriteRenderer>();
+            sr.sprite = CardSprites.getInstance().defaultSprite;
+            return new_card;
+        }
+
+        public GameObject getDefaultCard(int i)
+        {
+            while (i >= defaultCards.Count)
+            {
+                defaultCards.Add(createDefaultCard());
+            }
+            return defaultCards[i] as GameObject;
         }
 
         public GameObject getCard(Mark mark, int num)

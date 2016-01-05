@@ -39,7 +39,7 @@ class GameStatus(models.Model):
         trick = self.get_trick()
         print trick
         print len(trick)
-        trick.append({'player_order': player.order, 'order': len(trick), 'card': card})
+        trick.append({'order': player.order, 'card': card})
         self.trick = json.dumps({'trick': trick})
 
     def get_trick(self):
@@ -77,15 +77,16 @@ class GameStatus(models.Model):
             status['contract'] = None
         status['contract_limit'] = self.contract_limit
         players = {}
-        players['player0'] = {'id': None, 'passed': False, 'point_card': []}
-        players['player1'] = {'id': None, 'passed': False, 'point_card': []}
-        players['player2'] = {'id': None, 'passed': False, 'point_card': []}
-        players['player3'] = {'id': None, 'passed': False, 'point_card': []}
-        players['player4'] = {'id': None, 'passed': False, 'point_card': []}
+        players['player0'] = {'id': None, 'passed': False, 'point_card': [], 'hands': 0}
+        players['player1'] = {'id': None, 'passed': False, 'point_card': [], 'hands': 0}
+        players['player2'] = {'id': None, 'passed': False, 'point_card': [], 'hands': 0}
+        players['player3'] = {'id': None, 'passed': False, 'point_card': [], 'hands': 0}
+        players['player4'] = {'id': None, 'passed': False, 'point_card': [], 'hands': 0}
         for player in self.players.all():
             players['player' + str(player.order)]['id'] = player.id
             players['player' + str(player.order)]['passed'] = player.passed
             players['player' + str(player.order)]['point_card'] = player.get_point_card()
+            players['player' + str(player.order)]['hands'] = len(player.get_hands())
         status['players'] = players
         status['remain_cards'] = self.get_remain_cards()
         status['trick'] = self.get_trick()
@@ -110,7 +111,7 @@ class Contract(models.Model):
     player = models.ForeignKey('Player', related_name='contract', null=False)
 
     def get_contract(self):
-        return {'face': self.face, 'number': self.number, 'player': self.player.id}
+        return {'face': self.face, 'number': self.number, 'order': self.player.order}
 
 
 class Player(models.Model):

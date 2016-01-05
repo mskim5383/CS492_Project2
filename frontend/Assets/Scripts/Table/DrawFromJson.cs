@@ -1,0 +1,137 @@
+﻿using Assets.Scripts.Card;
+using LitJson;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using UnityEngine;
+
+namespace Assets.Scripts.Table
+{
+    class DrawFromJson
+    {
+        Quaternion OPEN = new Quaternion(180, 0, 0, 0);
+        Quaternion CLOSE = new Quaternion(0, 0, 0, 0);
+        Deck deck;
+        public DrawFromJson(Deck deck) {
+            this.deck = deck;
+        }
+
+        public void draw(JsonData data)
+        {
+            int back_count = 0;
+            JsonData game_status = data["game_status"];
+            JsonData player = data["palyer"];
+
+            JsonData hands = player["hands"];
+            int OWN = 0;
+            for (int i=0;i<hands.Count ;i++)
+            {
+                string strCard = hands[i].ToString();
+                GameObject cardObject = getCardObjectByString(strCard);
+                cardObject.transform.position = TablePosition.getCardPositionForHand(OWN, i, hands.Count);
+                SpriteRenderer sr = cardObject.GetComponent<SpriteRenderer>();
+                sr.sortingOrder = i;
+            }
+
+            JsonData players = game_status["players"];
+            int player_order = (int)player["order"];
+            int order = player_order;
+
+            for (int i=0;i<5;i++)
+            {
+                string player_name = "player" + order.ToString();
+                JsonData player_data = players[player_name];
+                if (i != 0)
+                {
+                    int hand_count = (int)player_data["hands"];
+                    for (int c=0;c< hand_count;c ++)
+                    {
+                        GameObject cardObject = deck.getDefaultCard(back_count++);
+                        cardObject.transform.position = TablePosition.getCardPositionForHand(i, c, hand_count);
+                        SpriteRenderer sr = cardObject.GetComponent<SpriteRenderer>();
+                        sr.sortingOrder = c;
+                    }
+                }
+                JsonData point_card = player_data["point_card"];
+                for (int c=0;c<point_card.Count;c++)
+                {
+                    GameObject cardObject = getCardObjectByString(point_card[c].ToString());
+                    cardObject.transform.position = TablePosition.getCardPositionForPointCard(i, c, point_card.Count);
+                    SpriteRenderer sr = cardObject.GetComponent<SpriteRenderer>();
+                    sr.sortingOrder = c;
+                }
+                order = (order + 1) % 5;
+            }
+
+            JsonData trick = game_status["trick"];
+            for (int i=0;i< trick.Count;i++)
+            {
+                int trick_order = (int)trick[i]["order"];
+                int rela_order = (trick_order - player_order + 5) % 5;
+                string strCard = trick[i]["card"].ToString();
+
+                GameObject cardObject = getCardObjectByString(strCard);
+                cardObject.transform.position = TablePosition.getThrowPosition(rela_order);
+                SpriteRenderer sr = cardObject.GetComponent<SpriteRenderer>();
+                sr.sortingOrder = i;
+            }
+        }
+
+        public GameObject getCardObjectByString(string strCard)
+        {
+            Mark mark = Mark.JK;
+            int num = 0;
+            
+            switch(strCard[0])
+            {
+                case 'S':
+                    mark = Mark.S;
+                    break;
+                case 'D':
+                    mark = Mark.D;
+                    break;
+                case 'H':
+                    mark = Mark.H;
+                    break;
+                case 'C':
+                    mark = Mark.C;
+                    break;
+                case 'J':
+                    mark = Mark.JK;
+                    break;
+            }
+            if (mark != Mark.JK)
+            {
+                if ('1' <= strCard[1] && strCard[1] <= '9')
+                {
+                    num = (int)(strCard[1] - '0');
+                    if (strCard.Length > 2)
+                    {
+                        num = num * 10 + (int)(strCard[2] - '0');
+                    }
+                } else
+                {
+                    switch(strCard[1])
+                    {
+                        case 'A':
+                            num = 1;
+                            break;
+                        case 'J':
+                            num = 11;
+                            break;
+                        case 'Q':
+                            num = 12;
+                            break;
+                        case 'K':
+                            num = 13;
+                            break;
+                    }
+                }
+            }
+
+            KeyValuePair<Mark, int> key = new KeyValuePair<Mark, int>(mark, num);
+            return deck.cardMap[key];
+        }
+    }
+}
