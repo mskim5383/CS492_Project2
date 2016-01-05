@@ -44,9 +44,7 @@ namespace Assets.Scripts
                 if (string.IsNullOrEmpty(www.error))
                 {
                     JsonData jResponse = JsonMapper.ToObject(www.text);
-                    Debug.Log("Response successful");
                     JsonData jWaitingRooms = jResponse["waiting_rooms"];
-                    Debug.Log("waiting_rooms found " + jWaitingRooms.IsArray);
                     ArrayList aWaitingRooms = new ArrayList(); /* new dynamic list */
                     ArrayList aWaitMemberCount = new ArrayList();
                     int tmp;
@@ -54,18 +52,15 @@ namespace Assets.Scripts
                     {
                         if (jWaitingRooms[i]["status"].Equals(0))
                         {
-                            Debug.Log("[STATUS] status is zero");
                             aWaitingRooms.Add(jWaitingRooms[i]["id"]);
                             tmp = 0;
                             for (int p = 0; p < 5; p++)
                             {
                                 if (jWaitingRooms[i]["players"]["player"+p]["id"] == null)
                                 {
-                                    Debug.Log("player p not null :" + p);
                                 }
                                 else
                                 {
-                                    Debug.Log("player p null :" + p);
                                     tmp += 1;
                                 }
                             }
@@ -73,7 +68,6 @@ namespace Assets.Scripts
                         }
                         else
                         {
-                            Debug.Log("[STATUS] status is not zero");
                         }
                     }
                     this.status.rooms = aWaitingRooms; /* is lock necessary? is it ok to memory? */

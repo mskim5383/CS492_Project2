@@ -9,7 +9,6 @@ public class Room : MonoBehaviour {
     WWWRequest request;
     ArrayList rooms; // list of room numbers (integer)
     ArrayList roomMemCounts;
-    int i = 0;
 
     ArrayList roomButtons;
     ArrayList roomLabels;
@@ -29,8 +28,6 @@ public class Room : MonoBehaviour {
         GUI.Label(new Rect(30, 20, 200, 30), "Mighty", titleStyle);
         if (GUI.Button(new Rect(Screen.width-90, 10, 80, 30), "Refresh"))
         {
-            Debug.Log("refresh with " + i + " times");
-            i++;
             refreshRoomNumbers();
         }
 
@@ -153,8 +150,6 @@ public class Room : MonoBehaviour {
 
     void refreshRoomNumbers ()
     {
-        Debug.Log("Refreshing...");
         StartCoroutine(request.RequestRooms());
-       
     }
 }
