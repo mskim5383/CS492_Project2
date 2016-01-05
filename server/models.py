@@ -14,7 +14,6 @@ class GameStatus(models.Model):
     lead = models.IntegerField(default=0)
     contract = models.ForeignKey('Contract', related_name='gamestatus', null=True, blank=True)
     contract_limit = models.IntegerField(default=15)
-    cards = models.CharField(max_length=500, default=json.dumps({'cards':[]}))
     remain_cards = models.CharField(max_length=200, default=json.dumps({'cards':[]}))
     trick = models.CharField(max_length=200, default=json.dumps({'trick':[]}))
     declarer = models.IntegerField(default=0)
@@ -23,13 +22,6 @@ class GameStatus(models.Model):
     friend_card_value = models.CharField(max_length=2, blank=True)
     friend_select = models.IntegerField(default=0)
 
-
-    def set_cards(self, card):
-        self.cards = json.dumps({'cards': card})
-        self.save()
-
-    def get_cards(self):
-        return json.loads(self.cards)['cards']
 
     def set_remain_cards(self, card):
         self.remain_cards = json.dumps({'cards': card})
@@ -78,14 +70,18 @@ class GameStatus(models.Model):
             status['contract'] = self.contract.get_contract()
         else:
             status['contract'] = None
-        status['player0'] = None
-        status['player1'] = None
-        status['player2'] = None
-        status['player3'] = None
-        status['player4'] = None
+        status['contract_limit'] = self.contract_limit
+        players = {}
+        players['player0'] = {'id': None, 'passed': False, 'point_card': []}
+        players['player1'] = {'id': None, 'passed': False, 'point_card': []}
+        players['player2'] = {'id': None, 'passed': False, 'point_card': []}
+        players['player3'] = {'id': None, 'passed': False, 'point_card': []}
+        players['player4'] = {'id': None, 'passed': False, 'point_card': []}
         for player in self.players.all():
-            status['player' + str(player.order)] = player.id
-        status['cards'] = self.get_cards()
+            players['player' + str(player.order)]['id'] = player.id
+            players['player' + str(player.order)]['passed'] = player.passed
+            players['player' + str(player.order)]['point_card'] = player.get_point_card()
+        status['players'] = players
         status['remain_cards'] = self.get_remain_cards()
         status['trick'] = self.get_trick()
         status['declarer'] = self.declarer
@@ -115,7 +111,7 @@ class Contract(models.Model):
 class Player(models.Model):
     hands = models.CharField(max_length=200, default=json.dumps({'hands':[]}))
     passed = models.BooleanField(default=False)
-    point_card = models.CharField(max_length=200, default=json.dumps({}))
+    point_card = models.CharField(max_length=200, default=json.dumps({'cards':[]}))
     game_status = models.ForeignKey('GameStatus', related_name='players', null=True)
     order = models.IntegerField(default=-1)
 
@@ -126,6 +122,17 @@ class Player(models.Model):
     def set_hands(self, hands):
         self.hands = json.dumps({'hands':hands})
         self.save()
+
     def get_hands(self):
         return json.loads(self.hands)['hands']
+
+    def set_point_card(self, cards):
+        self.point_card = json.dumps({'cards':cards})
+        self.save()
+
+    def get_point_card(self):
+        return json.loads(self.point_card)['cards']
+
+    def get_player(self):
+        return {'hands': self.get_hands(), 'order': self.order, 'point_card': self.get_point_card()}
 

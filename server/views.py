@@ -45,17 +45,19 @@ def game_room(request, user_id, room_id):
         game_status = GameStatus.objects.get(id=room_id)
     else:
         return HttpResponse(json.dumps({'status': 'invalid room id'}), content_type="application/json")
-    if game_status.status == 0:
+    status = game_status.status
+    if status == 0:
         status0(request, player, game_status)
     elif player.game_status == game_status and player.order == game_status.turn and request.GET.has_key('action'):
-        if game_status.status == 1:
+        if status == 1:
             status1(request, player, game_status)
-        elif game_status.status == 2:
+        elif status == 2:
             status2(request, player, game_status)
 
 
 
-    return HttpResponse(json.dumps(game_status.get_game_status()), content_type="application/json")
+    return HttpResponse(json.dumps({'game_status':game_status.get_game_status(),
+                                    'palyer':player.get_player()}), content_type="application/json")
 
 def status0(request, player, game_status):
     if player.game_status == game_status:
@@ -73,7 +75,6 @@ def status0(request, player, game_status):
     cards.append('JK')
     random.shuffle(cards)
     game_status.set_remain_cards(cards[:3])
-    game_status.set_cards(cards[3:])
     player_list = game_status.get_player_list()
     for i in range(5):
         player_list[i].set_hands(cards[3+10*i:13+10*i])
@@ -97,10 +98,18 @@ def status1(request, player, game_status):
             contract.save()
             game_status.contract = contract
             player_list = game_status.get_player_list()
-            for p in player_list[(player.order + 1) % 5:] + player_list[:(player.order + 1) % 5]:
-                if not p.passed:
-                    break
-            game_status.turn = p.order
+            if game_status.players.filter(passed=False).count() == 1:
+                game_status.status = 2
+                game_status.lead = game_status.contract.player.order
+                game_status.turn = game_status.contract.player.order
+                game_status.declarer = game_status.contract.player.order
+                p = game_status.contract.player
+                p.set_hands(p.get_hands() + game_status.get_remain_cards())
+            else:
+                for p in player_list[(player.order + 1) % 5:] + player_list[:(player.order + 1) % 5]:
+                    if not p.passed:
+                        break
+                game_status.turn = p.order
         elif action == 'pass':
             player.passed = True
             player.save()
