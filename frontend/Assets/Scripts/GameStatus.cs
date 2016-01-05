@@ -13,6 +13,8 @@ namespace Assets.Scripts
         public static GameStatus instance;
 
         public ArrayList rooms;
+        public ArrayList roomMemCount;
+        public string room_id;
 
         public GameStatus ()
         {

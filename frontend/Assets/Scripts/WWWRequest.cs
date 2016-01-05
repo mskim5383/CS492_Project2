@@ -44,12 +44,30 @@ namespace Assets.Scripts
                     JsonData jWaitingRooms = jResponse["waiting_rooms"];
                     Debug.Log("waiting_rooms found " + jWaitingRooms.IsArray);
                     ArrayList aWaitingRooms = new ArrayList(); /* new dynamic list */
+                    ArrayList aWaitMemberCount = new ArrayList();
+                    int tmp;
                     for (int i = 0; i < jWaitingRooms.Count; i++)
                     {
                         if (jWaitingRooms[i]["status"].Equals(0))
+                        {
                             aWaitingRooms.Add(jWaitingRooms[i]["id"]);
+                            tmp = 0;
+                            for (int p = 0; p < 5; p++) {
+                                if (jWaitingRooms[i]["players"]["player" + p] == null)
+                                {
+                                    Debug.Log("player p null :" + p);
+                                }
+                                else
+                                {
+                                    Debug.Log("player p not null :" + p);
+                                    tmp += 1;
+                                }
+                            }
+                            aWaitMemberCount.Add(tmp);
+                        }
                     }
                     this.status.rooms = aWaitingRooms; /* is lock necessary? is it ok to memory? */
+                    this.status.roomMemCount = aWaitMemberCount;
                 }
             }
             else
