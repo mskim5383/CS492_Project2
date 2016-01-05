@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.Card;
+﻿using Assets.Scripts.ActionWindow;
+using Assets.Scripts.Card;
 using LitJson;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace Assets.Scripts.Table
             this.deck = deck;
         }
 
-        public void changeCardColor(GameObject cardObject, bool forcedWhite = false)
+        public bool changeCardColor(GameObject cardObject, bool forcedWhite = false)
         {
             ClickEvent c = cardObject.GetComponent<ClickEvent>();
             SpriteRenderer sr = cardObject.GetComponent<SpriteRenderer>();
@@ -23,28 +24,80 @@ namespace Assets.Scripts.Table
             if (c.selected)
             {
                 sr.color = new Color(0, 255, 0);
-            } else
+                return true;
+            }
+            else
             {
                 sr.color = new Color(255, 255, 255);
+                return false;
             }
         }
 
         public void draw(JsonData data)
         {
+            Dictionary<GameObject, bool> used = new Dictionary<GameObject, bool>();
+            foreach (GameObject card in deck.cardMap.Values)
+            {
+                used.Add(card, false);
+            }
+
             int back_count = 0;
             JsonData game_status = data["game_status"];
-            JsonData player = data["palyer"];
+            int status = (int)game_status["status"];
+            if (status == 0) return;
+            JsonData player = data["player"];
 
             JsonData hands = player["hands"];
             int OWN = 0;
+            int count = 0;
+            string selectedStr = "";
             for (int i=0;i<hands.Count ;i++)
             {
                 string strCard = hands[i].ToString();
                 GameObject cardObject = getCardObjectByString(strCard);
-                changeCardColor(cardObject);
+                used[cardObject] = true;
+                if (changeCardColor(cardObject))
+                {
+                    if (count > 0) selectedStr += ",";
+                    selectedStr += strCard;
+                    count++;
+                }
                 cardObject.transform.position = TablePosition.getCardPositionForHand(OWN, i, hands.Count);
                 SpriteRenderer sr = cardObject.GetComponent<SpriteRenderer>();
                 sr.sortingOrder = i;
+            }
+            if (GameStatus.getInstance().remain)
+            {
+                if (count == 3)
+                {
+                    WWWRequest request = new WWWRequest();
+                    GameStatus.getInstance().remainFrom.StartCoroutine(request.RequestRemain(selectedStr));
+                }
+                GameStatus.getInstance().remain = false;
+                GameStatus.getInstance().remainFrom = null;
+            }
+            if (GameStatus.getInstance().card)
+            {
+                if (count == 1)
+                {
+                    WWWRequest request = new WWWRequest();
+                    bool isLead = CommonFunction.isLead();
+                    if (isLead && CommonFunction.isJC(selectedStr))
+                    {
+                        GameStatus.getInstance().jcStr = selectedStr;
+                        GameStatus.getInstance().jcMark = true;
+                    }
+                    else if (isLead && selectedStr == "Jk")
+                    {
+                        GameStatus.getInstance().jkMark = true;
+                    }
+                    else
+                    {
+                        GameStatus.getInstance().cardFrom.StartCoroutine(request.RequestThrow(selectedStr));
+                    }
+                }
+                GameStatus.getInstance().card = false;
+                GameStatus.getInstance().cardFrom = null;
             }
 
             JsonData players = game_status["players"];
@@ -71,6 +124,7 @@ namespace Assets.Scripts.Table
                 for (int c=0;c<point_card.Count;c++)
                 {
                     GameObject cardObject = getCardObjectByString(point_card[c].ToString());
+                    used[cardObject] = true;
                     changeCardColor(cardObject, true);
                     cardObject.transform.position = TablePosition.getCardPositionForPointCard(i, c, point_card.Count);
                     SpriteRenderer sr = cardObject.GetComponent<SpriteRenderer>();
@@ -87,10 +141,20 @@ namespace Assets.Scripts.Table
                 string strCard = trick[i]["card"].ToString();
 
                 GameObject cardObject = getCardObjectByString(strCard);
+                used[cardObject] = true;
                 changeCardColor(cardObject, true);
                 cardObject.transform.position = TablePosition.getThrowPosition(rela_order);
                 SpriteRenderer sr = cardObject.GetComponent<SpriteRenderer>();
                 sr.sortingOrder = i;
+            }
+
+
+            foreach (GameObject card in deck.cardMap.Values)
+            {
+                if (!used[card])
+                {
+                    card.transform.position = new Vector3(0, 0, -20);
+                }
             }
         }
 

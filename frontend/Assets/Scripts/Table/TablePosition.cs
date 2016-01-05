@@ -17,7 +17,7 @@ namespace Assets.Scripts.Table
             return startPosition + margin * i;
         }
 
-        class Player5_Center
+        public class Player5_Center
         {
             int player;
             public Player5_Center(int player)

@@ -13,11 +13,21 @@ namespace Assets.Scripts
         public string id;
         public static GameStatus instance;
 
-        public bool dirty = true;
+        public bool dirty = false;
+        public bool remain = false;
+        public Friend remainFrom;
+        public bool card = false;
+        public Myturn cardFrom;
+        public bool jkMark = false;
+        public string jcStr = "";
+        public bool jcMark = false;
 
         public ArrayList rooms;
         public ArrayList roomMemCount;
         public string room_id;
+
+        public JsonData jsonData;
+        public int nowStatus = -1;
 
         public GameStatus ()
         {
