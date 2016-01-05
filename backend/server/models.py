@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 import json
+from django.utils import timezone
 
 # Create your models here.
 
@@ -77,16 +78,17 @@ class GameStatus(models.Model):
             status['contract'] = None
         status['contract_limit'] = self.contract_limit
         players = {}
-        players['player0'] = {'id': None, 'passed': False, 'point_card': [], 'hands': 0}
-        players['player1'] = {'id': None, 'passed': False, 'point_card': [], 'hands': 0}
-        players['player2'] = {'id': None, 'passed': False, 'point_card': [], 'hands': 0}
-        players['player3'] = {'id': None, 'passed': False, 'point_card': [], 'hands': 0}
-        players['player4'] = {'id': None, 'passed': False, 'point_card': [], 'hands': 0}
+        players['player0'] = {'id': None, 'passed': False, 'point_card': [], 'hands': 0, 'ping': 0}
+        players['player1'] = {'id': None, 'passed': False, 'point_card': [], 'hands': 0, 'ping': 0}
+        players['player2'] = {'id': None, 'passed': False, 'point_card': [], 'hands': 0, 'ping': 0}
+        players['player3'] = {'id': None, 'passed': False, 'point_card': [], 'hands': 0, 'ping': 0}
+        players['player4'] = {'id': None, 'passed': False, 'point_card': [], 'hands': 0, 'ping': 0}
         for player in self.players.all():
             players['player' + str(player.order)]['id'] = player.id
             players['player' + str(player.order)]['passed'] = player.passed
             players['player' + str(player.order)]['point_card'] = player.get_point_card()
             players['player' + str(player.order)]['hands'] = len(player.get_hands())
+            players['player' + str(player.order)]['ping'] = (timezone.now() - player.modified_time).total_seconds()
         status['players'] = players
         status['remain_cards'] = self.get_remain_cards()
         status['trick'] = self.get_trick()
@@ -120,6 +122,7 @@ class Player(models.Model):
     point_card = models.CharField(max_length=200, default=json.dumps({'cards':[]}))
     game_status = models.ForeignKey('GameStatus', related_name='players', null=True)
     order = models.IntegerField(default=-1)
+    modified_time = models.DateTimeField(auto_now=True)
 
 
     def __unicode__(self):

@@ -46,7 +46,11 @@ def game_room(request, user_id, room_id):
     else:
         return HttpResponse(json.dumps({'status': 'invalid room id'}), content_type="application/json")
     status = game_status.status
-    data = json.loads(request.body)
+    if request.method == 'POST':
+        data = json.loads(request.body)
+    else:
+        data = {}
+    player.save()
     try:
         if status == 0:
             status0(data, player, game_status)
