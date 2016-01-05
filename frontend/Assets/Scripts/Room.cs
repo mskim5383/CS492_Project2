@@ -16,6 +16,7 @@ public class Room : MonoBehaviour {
     public GUIStyle titleStyle;
     public GUIStyle pageNumStyle;
 
+    public bool refreshedFirstTime = false;
     public int roomPageNum = 0;
     public int roomCount = 0;
     string []roomTitles = new string[4] { "", "", "", "" };
@@ -100,7 +101,6 @@ public class Room : MonoBehaviour {
         roomButtons = new ArrayList();
         roomLabels = new ArrayList();
         StartCoroutine(request.RequestUser());
-        refreshRoomNumbers();
 
         /* */
         /* */
@@ -124,6 +124,11 @@ public class Room : MonoBehaviour {
         Debug.Log("Button1");
     }
     void Update () {
+        if (!refreshedFirstTime && !string.IsNullOrEmpty(gameStatus.id))
+        {
+            refreshedFirstTime = true;
+            refreshRoomNumbers();
+        }
         if (goingToNextScene == true)
             return;
         ArrayList newRooms = gameStatus.rooms;
