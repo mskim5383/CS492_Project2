@@ -54,13 +54,35 @@ namespace Assets.Scripts.Card
             return new_card;
         }
 
+        public int last = 0;
         public GameObject getDefaultCard(int i)
         {
             while (i >= defaultCards.Count)
             {
                 defaultCards.Add(createDefaultCard());
             }
+            if (i > last) last = i;
             return defaultCards[i] as GameObject;
+        }
+        
+        public List<GameObject> getRemainDefaultCards(int i)
+        {
+            List<GameObject> res = new List<GameObject>();
+            while (i < defaultCards.Count)
+            {
+                res.Add(defaultCards[i] as GameObject);
+            }
+            return res;
+        }
+
+        public void decreaseDefaultCard(int limit)
+        {
+            while(last >= limit)
+            {
+                GameObject card = defaultCards[last] as GameObject;
+                card.transform.position = new Vector3(0, 0, -20);
+                last--;
+            }
         }
 
         public GameObject getCard(Mark mark, int num)

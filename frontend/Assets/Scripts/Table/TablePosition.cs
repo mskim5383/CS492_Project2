@@ -10,7 +10,7 @@ namespace Assets.Scripts.Table
     {
         private const int tableMargin = 30;
         private const int cardMargin = 20;
-        private const int ownCardMargin = 50;
+        private const int ownCardMargin = 35;
         private static int getPos(int centerPosition, int i, int n, int margin)
         {
             int startPosition = centerPosition - (margin * (n - 1)) / 2;
@@ -98,7 +98,7 @@ namespace Assets.Scripts.Table
                 x = getPos(x, i, n, player == 0 ? ownCardMargin : cardMargin);
             }
             Vector3 pos = camera.ScreenToWorldPoint(new Vector3(x, y, 10));
-            pos.z = -1;
+            pos.z = -1 - 0.01f * i;
             return pos;
         }
         

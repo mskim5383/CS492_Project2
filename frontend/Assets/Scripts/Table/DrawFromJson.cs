@@ -64,7 +64,7 @@ namespace Assets.Scripts.Table
                 }
                 cardObject.transform.position = TablePosition.getCardPositionForHand(OWN, i, hands.Count);
                 SpriteRenderer sr = cardObject.GetComponent<SpriteRenderer>();
-                sr.sortingOrder = i;
+                sr.sortingOrder = 100+i;
             }
             if (GameStatus.getInstance().remain)
             {
@@ -156,6 +156,8 @@ namespace Assets.Scripts.Table
                     card.transform.position = new Vector3(0, 0, -20);
                 }
             }
+
+            deck.decreaseDefaultCard(back_count);
         }
 
         public GameObject getCardObjectByString(string strCard)

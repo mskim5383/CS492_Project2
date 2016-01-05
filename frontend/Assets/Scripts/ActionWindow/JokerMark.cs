@@ -23,14 +23,14 @@ public class JokerMark : MonoBehaviour {
         {
             if (GUI.Button(new Rect(mx, cy - 30, 30, 30), mark.ToString()))
             {
-                StartCoroutine(request.RequestThrow("JK", mark.ToString()));
+                StartCoroutine(request.RequestThrow("Jk", mark.ToString()));
                 status.jkMark = false;
             }
             mx += 40;
         }
         if (GUI.Button(new Rect(cx - 50, cy + 10, 100, 30), "설정안함"))
         {
-            StartCoroutine(request.RequestThrow("JK", "_"));
+            StartCoroutine(request.RequestThrow("Jk", "_"));
             status.jkMark = false;
         }
     }

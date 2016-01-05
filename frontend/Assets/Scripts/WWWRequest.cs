@@ -153,7 +153,9 @@ namespace Assets.Scripts
                 if (friend == 2)
                 {
                     writer.WritePropertyName("face");
-                    writer.Write(sMark.ToString());
+                    string mark = sMark.ToString();
+                    if (mark == "JK") mark = "Jk";
+                    writer.Write(mark);
                     if (sMark != Mark.JK)
                     {
                         writer.WritePropertyName("value");
@@ -210,6 +212,11 @@ namespace Assets.Scripts
                 writer.Write("throw");
                 writer.WritePropertyName("card");
                 writer.Write(card);
+                if (face != null)
+                {
+                    writer.WritePropertyName("face");
+                    writer.Write(face);
+                }
             }
             writer.WriteObjectEnd();
 

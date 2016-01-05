@@ -78,7 +78,7 @@ public class Friend : MonoBehaviour
         int myorder = (int)status.jsonData["player"]["order"];
         for (int a = 1; a <= 4; a++)
         {
-            int aorder = (myorder + 5) % 5;
+            int aorder = (myorder + a) % 5;
             bef = GUI.color;
             if (friend == 3 && (aorder == select))
             {

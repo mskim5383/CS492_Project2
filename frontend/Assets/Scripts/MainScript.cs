@@ -25,7 +25,7 @@ public class MainScript : MonoBehaviour {
     }
 
     // Update is called once per frame
-    const float updateTime = 0.5f;
+    const float updateTime = 2.0f;
     float remainTime = 0.5f;
     void Update () {
         remainTime -= Time.deltaTime;
