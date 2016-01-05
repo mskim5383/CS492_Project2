@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from server.models import *
 import json
 import random
@@ -38,6 +39,7 @@ def create_room(request, user_id):
     player.save()
     return HttpResponse(json.dumps(game_status.get_game_status()), content_type="application/json")
 
+@csrf_exempt
 def game_room(request, user_id, room_id):
     if Player.objects.filter(id=user_id).exists():
         player = Player.objects.get(id=user_id)
@@ -48,9 +50,9 @@ def game_room(request, user_id, room_id):
     else:
         return HttpResponse(json.dumps({'status': 'invalid room id'}), content_type="application/json")
     status = game_status.status
-    if request.method == 'POST':
+    try:
         data = json.loads(request.body)
-    else:
+    except:
         data = {}
     player.save()
     try:
