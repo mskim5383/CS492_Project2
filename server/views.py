@@ -225,6 +225,8 @@ def status3(request, player, game_status):
         game_status.turn = lead
         game_status.clear_trick()
         game_status.get_player_list()[lead].add_point_cards(point_card)
+        if len(hands == 0):
+            game_status.status += 1
     game_status.save()
     return
 
