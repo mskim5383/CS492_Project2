@@ -76,6 +76,7 @@ namespace Assets.Scripts.Table
                 get
                 {
                     return player == 1 || player == 2 || player == 3;
+                    //return player == 0 || player == 4;
                 }
             }
         };
