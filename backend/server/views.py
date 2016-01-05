@@ -59,7 +59,7 @@ def game_room(request, user_id, room_id):
 
 
     return HttpResponse(json.dumps({'game_status':game_status.get_game_status(),
-                                    'palyer':player.get_player()}), content_type="application/json")
+                                    'player':player.get_player()}), content_type="application/json")
 
 def status0(request, player, game_status):
     if player.game_status == game_status:
