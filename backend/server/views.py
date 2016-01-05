@@ -192,11 +192,14 @@ def status3(request, player, game_status):
                 joker_call = 'S3'
             else:
                 joker_call = 'C3'
+            if joker_call != card:
+                return
             if not joker_call in hands:
                 return
             hands.pop(hands.index(joker_call))
             player.set_hands(hands)
             game_status.add_trick(player, joker_call)
+            game_status.joker_call = True
         elif action == 'throw':
             if not card in hands:
                 return
@@ -224,6 +227,7 @@ def status3(request, player, game_status):
         game_status.turn = lead
         game_status.clear_trick()
         game_status.get_player_list()[lead].add_point_cards(point_card)
+        game_status.joker_call = False
         if len(hands) == 0:
             game_status.status += 1
     game_status.save()
