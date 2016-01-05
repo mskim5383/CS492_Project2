@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from server.models import *
 import json
 import random
@@ -29,6 +30,8 @@ def create_room(request, user_id):
         player = Player.objects.get(id=user_id)
     else:
         return HttpResponse(json.dumps({'status': 'invalid user'}), content_type="application/json")
+    if not player.game_status is None:
+        return HttpResponse(json.dumps({'status': 'already joined'}), content_type="application/json")
     game_status = GameStatus()
     game_status.save()
     player.game_status = game_status
@@ -36,6 +39,7 @@ def create_room(request, user_id):
     player.save()
     return HttpResponse(json.dumps(game_status.get_game_status()), content_type="application/json")
 
+@csrf_exempt
 def game_room(request, user_id, room_id):
     if Player.objects.filter(id=user_id).exists():
         player = Player.objects.get(id=user_id)
@@ -46,7 +50,11 @@ def game_room(request, user_id, room_id):
     else:
         return HttpResponse(json.dumps({'status': 'invalid room id'}), content_type="application/json")
     status = game_status.status
-    data = json.loads(request.body)
+    try:
+        data = json.loads(request.body)
+    except:
+        data = {}
+    player.save()
     try:
         if status == 0:
             status0(data, player, game_status)
@@ -74,6 +82,7 @@ def status0(data, player, game_status):
     game_status.status = 1
     game_status.turn = 0
     game_status.lead = 0
+    game_status.save()
     cards = []
     for face in FACE:
         for value in VALUE:
@@ -81,8 +90,10 @@ def status0(data, player, game_status):
     cards.append('Jk')
     random.shuffle(cards)
     game_status.set_remain_cards(cards[:3])
+    i = 0
     for player in game_status.players.all():
         player.set_hands(cards[3+10*i:13+10*i])
+        i += 1
 
 
     return

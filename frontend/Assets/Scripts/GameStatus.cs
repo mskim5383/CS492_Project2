@@ -10,9 +10,8 @@ namespace Assets.Scripts
 {
     class GameStatus
     {
-        public string id;
         public static GameStatus instance;
-
+        
         public bool dirty = false;
         public bool remain = false;
         public Friend remainFrom;
@@ -22,8 +21,10 @@ namespace Assets.Scripts
         public string jcStr = "";
         public bool jcMark = false;
 
+        public string id;
+
         public ArrayList rooms;
-        public ArrayList roomMemCount;
+        public ArrayList roomMemCounts;
         public string room_id;
 
         public JsonData jsonData;
@@ -33,6 +34,8 @@ namespace Assets.Scripts
         {
             id = null;
             rooms = new ArrayList();
+            roomMemCounts = new ArrayList();
+            room_id = null;
         }
         public static GameStatus getInstance()
         {
