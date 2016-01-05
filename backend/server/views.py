@@ -19,7 +19,7 @@ def register(request):
 def waiting_room(request, user_id):
     if not Player.objects.filter(id=user_id).exists():
         return HttpResponse(json.dumps({'status': 'invalid user'}), content_type="application/json")
-    game_status_list = GameStatus.objects.all()
+    game_status_list = GameStatus.objects.filter(status=0)
     waiting_room_list = []
     for game_status in game_status_list:
         waiting_room_list.append(game_status.get_game_status())
@@ -54,7 +54,6 @@ def game_room(request, user_id, room_id):
         data = json.loads(request.body)
     except:
         data = {}
-    player.save()
     try:
         if status == 0:
             status0(data, player, game_status)
@@ -157,9 +156,9 @@ def status2(data, player, game_status):
     if action == 'remain' and len(player.get_hands()) == 13:
         hands = player.get_hands()
         cards = data.get('cards')
-        if len(cards) != 8:
-            return
         cards = cards.split(',')
+        if len(cards) != 3:
+            return
         for card in cards:
             if not card in hands:
                 return
@@ -172,7 +171,10 @@ def status2(data, player, game_status):
         game_status.friend = int(data.get('friend'))
         if game_status.friend == 2:
             game_status.friend_card_face = data.get('face')
-            game_status.friend_card_value = data.get('value')
+            if data.get('face') == 'Jk':
+                game_status.friend_card_value = ''
+            else:
+                game_status.friend_card_value = data.get('value')
         elif game_status.friend == 3:
             game_status.friend_select = int(data.get('select'))
     if game_status.friend and len(player.get_hands()) == 10:
@@ -187,16 +189,20 @@ def status3(data, player, game_status):
     card = data.get('card')
     mighty = 'SA'
     if giruda == 'S':
-        mighty = 'CA'
+        mighty = 'DA'
     if game_status.joker_call and 'Jk' in hands and card != mighty:
         hands.pop(hands.index('Jk'))
-        player.set_hands(hands)
         game_status.add_trick(player, 'Jc')
         lead_face = game_status.lead_face
     else:
         if game_status.turn == game_status.lead:
+            print card
             if card == 'Jk':
+                print data.get('face')
+                print 111
                 game_status.lead_face = data.get('face')
+                if not game_status.lead_face:
+                    game_status.lead_face = '_'
             else:
                 game_status.lead_face = card[0]
         lead_face = game_status.lead_face
@@ -210,18 +216,16 @@ def status3(data, player, game_status):
             if not joker_call in hands:
                 return
             hands.pop(hands.index(joker_call))
-            player.set_hands(hands)
             game_status.add_trick(player, joker_call)
             game_status.joker_call = True
         elif action == 'throw':
             if not card in hands:
                 return
-            if not card == 'Jk' and card[0] != lead_face:
+            if not card == 'Jk' and not card == mighty and card[0] != lead_face:
                 for hand in hands:
                     if hand[0] == lead_face:
                         return
             hands.pop(hands.index(card))
-            player.set_hands(hands)
             game_status.add_trick(player, card)
         else:
             return
@@ -243,6 +247,10 @@ def status3(data, player, game_status):
         game_status.joker_call = False
         if len(hands) == 0:
             game_status.status += 1
+    print len(player.get_hands())
+    Player.objects.get(id=player.id).set_hands(hands)
+    print len(player.get_hands())
+    print ""
     game_status.save()
     return
 
@@ -250,7 +258,9 @@ def get_card_score(card, giruda, lead_face):
     score = 0
     if card == 'Jk':
         return 1000
-    elif giruda == 'S' and card == 'CA':
+    elif card == 'Jc':
+        return 0
+    elif giruda == 'S' and card == 'DA':
         return 10000
     elif card == 'SA':
         return 10000
