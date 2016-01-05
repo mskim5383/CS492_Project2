@@ -171,14 +171,17 @@ def status3(request, player, game_status):
     action = request.GET.get('action')
     hands = player.get_hands()
     giruda = game_status.contract.face
-    if game_status.joker_call and 'Jk' in hands:
+    card = request.GET.get('card')
+    mighty = 'SA'
+    if giruda == 'S':
+        mighty = 'CA'
+    if game_status.joker_call and 'Jk' in hands and card != mighty:
         hands.pop(hands.index('Jk'))
         player.set_hands(hands)
         game_status.add_trick(player, 'Jc')
         lead_face = game_status.lead_face
     else:
         if game_status.turn == game_status.lead:
-            card = request.GET.get('card')
             if card == 'Jk':
                 game_status.lead_face = request.GET.get('face')
             else:
@@ -189,13 +192,15 @@ def status3(request, player, game_status):
                 joker_call = 'S3'
             else:
                 joker_call = 'C3'
+            if joker_call != card:
+                return
             if not joker_call in hands:
                 return
             hands.pop(hands.index(joker_call))
             player.set_hands(hands)
             game_status.add_trick(player, joker_call)
+            game_status.joker_call = True
         elif action == 'throw':
-            card = request.GET.get('card')
             if not card in hands:
                 return
             if not card == 'Jk' and card[0] != lead_face:
@@ -213,19 +218,17 @@ def status3(request, player, game_status):
         boss_card = {'card': '_0'}
         trick = game_status.get_trick()
         for card in trick:
-            if card['order'] == 0:
-                lead_face = card['card'][0]
-        for card in trick:
             if card['card'][1:] in ('10', 'J', 'Q', 'K', 'A'):
                 point_card.append(card['card'])
             if get_card_score(card['card'], giruda, lead_face) > get_card_score(boss_card['card'], giruda, lead_face):
                 boss_card = card
-        lead = boss_card['player_order']
+        lead = boss_card['order']
         game_status.lead = lead
         game_status.turn = lead
         game_status.clear_trick()
         game_status.get_player_list()[lead].add_point_cards(point_card)
-        if len(hands == 0):
+        game_status.joker_call = False
+        if len(hands) == 0:
             game_status.status += 1
     game_status.save()
     return
